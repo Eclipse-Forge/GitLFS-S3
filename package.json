@@ -1,11 +1,11 @@
 {
   "name": "GitLFS-S3-Proxy",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
-  "main": "server.mjs",
+  "main": "server.js",
   
     "scripts": {
-    "start": "node server.mjs"
+    "start": "node server.js"
   },
 
   "dependencies": {
