@@ -1,0 +1,16 @@
+{
+  "name": "GitLFS-S3-Proxy",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "server.mjs",
+  
+    "scripts": {
+    "start": "node server.mjs"
+  },
+
+  "dependencies": {
+    "aws4": "^1.12.0",
+    "body-parser": "^1.20.3",
+    "express": "^4.19.2"
+  }
+}
