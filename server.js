@@ -268,7 +268,7 @@ function signS3Request(method, oid, expiresInSeconds = S3_AUTH_EXPIRATION) {
 // This is the main entrypoint Git LFS uses.
 //
 // You can point your repo at this by setting, for example:
-//   git config -f .lfsconfig lfs.url "https://<your-render-service>/"
+//   git config -f .lfsconfig lfs.url "https://<your-render-service>.onrender.com"
 // Then Git LFS will call POST /objects/batch on that base URL.
 app.post('/objects/batch', async (req, res) => {
 
