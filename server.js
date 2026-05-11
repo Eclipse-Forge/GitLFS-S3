@@ -156,7 +156,7 @@ async function objectExists(oid) {
       return false;
     }
 
-    // Backblaze B2 occasionally
+    // Backblaze B2 occasionally returns 400 for weird HEAD cases.
     //
     // Safest behavior:
     // assume object missing.
