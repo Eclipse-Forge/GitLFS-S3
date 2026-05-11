@@ -33,7 +33,6 @@
 //    }
 //
 // 3. Git LFS then directly talks to S3/B2 using the signed URLs.
-//    This server is stateless and only signs requests.
 
 import express from 'express';
 import aws4 from 'aws4';
