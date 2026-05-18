@@ -1,4 +1,29 @@
 # GitLFS‑S3
+<!-- Core Project Metadata -->
+![License](https://img.shields.io/badge/license-Apache--2.0-blue)
+![Node Version](https://img.shields.io/badge/node-%3E%3D18-green)
+![Project Status](https://img.shields.io/badge/status-stable-success)
+
+<!-- Security & Contribution Requirements -->
+![Security Policy](https://img.shields.io/badge/security-policy%20enabled-blue)
+![Verified PRs](https://img.shields.io/badge/pull%20requests-verified%20only-important)
+![SSH Signing](https://img.shields.io/badge/commits-SSH%20signed-blueviolet)
+
+<!-- Compatibility & Design -->
+![S3 Compatible](https://img.shields.io/badge/storage-S3%20compatible-orange)
+![Backblaze B2 Optimized](https://img.shields.io/badge/optimized-Backblaze%20B2-red)
+![Stateless Design](https://img.shields.io/badge/design-stateless-lightgrey)
+![Git LFS Basic API](https://img.shields.io/badge/Git%20LFS-basic%20transfer%20API-yellow)
+
+<!-- Repository Health -->
+![Issues](https://img.shields.io/github/issues/Eclipse-Forge/GitLFS-S3)
+![Pull Requests](https://img.shields.io/github/issues-pr/Eclipse-Forge/GitLFS-S3)
+![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen)
+
+<!-- Aesthetic / Identity -->
+![Made with Node](https://img.shields.io/badge/made%20with-Node.js-6DA55F)
+![Open Source](https://img.shields.io/badge/open%20source-%E2%9D%A4-red)
+
 A lightweight, stateless Git LFS “basic” transfer adapter that signs temporary S3‑compatible URLs for uploading and downloading Git LFS objects.
 Designed primarily for [Backblaze B2](https://www.backblaze.com/cloud-storage/pricing) S3‑Compatible Storage and deployable on Render, Fly.io, Railway, or any Node.js host. 
 
