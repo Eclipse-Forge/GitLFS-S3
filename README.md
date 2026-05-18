@@ -3,6 +3,7 @@
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
 ![Node Version](https://img.shields.io/badge/node-%3E%3D18-green)
 ![Project Status](https://img.shields.io/badge/status-stable-success)
+![Version](https://img.shields.io/github/v/release/Eclipse-Forge/GitLFS-S3)
 
 <!-- Security & Contribution Requirements -->
 ![Security Policy](https://img.shields.io/badge/security-policy%20enabled-blue)
