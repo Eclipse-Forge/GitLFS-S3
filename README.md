@@ -1,220 +1,90 @@
-# Git LFS → Backblaze S3 Proxy (Node.js / Render)
-
-A lightweight, stateless Git LFS “basic” transfer adapter that signs temporary S3‑compatible URLs for uploading and downloading Git LFS objects.  
-Designed for **Backblaze B2 S3‑Compatible Storage** and deployable on **Render.com** with zero persistent state.
-
-This service acts as a translation layer between Git LFS and Backblaze’s S3 API, allowing you to store large files efficiently and cheaply without modifying your Git hosting provider.
+# GitLFS‑S3
+A lightweight, stateless Git LFS “basic” transfer adapter that signs temporary S3‑compatible URLs for uploading and downloading Git LFS objects.
+Designed primarily for [Backblaze B2](https://www.backblaze.com/cloud-storage/pricing) S3‑Compatible Storage and deployable on Render, Fly.io, Railway, or any Node.js host. 
 
 ---
 
-## ✨ Features
+## Overview
+GitLFS‑S3 acts as a **translation layer** between Git LFS and any S3‑compatible backend. It exposes the Git LFS “basic” transfer API and dynamically signs short‑lived upload/download URLs, allowing Git LFS clients to push and pull large objects without requiring your Git hosting provider to support S3 directly. 
 
-- Fully compatible with Git LFS “basic” transfer mode  
-- Stateless — no database required  
-- Uses Backblaze’s **S3‑Compatible API**  
-- Supports both upload and download signing  
-- Works on Render, Fly.io, Railway, or any Node host  
-- Clean, readable, well‑commented code  
-- Easy to fork and customise  
+The service is intentionally stateless — it does not store metadata, maintain a database, or persist any information between requests. This makes it easy to deploy, scale horizontally, and run cheaply on serverless or ephemeral platforms. 
 
 ---
 
-# 🚀 Deploying on Render.com
-
-This section walks you through setting up Backblaze and deploying the proxy on Render.
-
----
-
-## 1. Create a Backblaze B2 Bucket
-
-1. Log in to Backblaze  
-2. Go to **Buckets**  
-3. Create a new bucket  
-4. **IMPORTANT:**  
-   - Bucket name must be **lowercase**, **DNS‑compatible**, and may include hyphens  
-   - Example:  
-     ```
-     my-lfs-bucket
-     project-lfs-storage
-     ```
-
-Backblaze S3 API **does not support uppercase or underscores** in bucket names.
+## Features
+- Fully compatible with Git LFS “basic” transfer mode 
+- Stateless design — no database or persistent storage required
+- Supports both upload and download signing
+- Works with Backblaze B2 and any S3‑compatible API
+- Clean, readable Node.js codebase designed for easy forking and customization 
+- Deployable on Render, Fly.io, Railway, Docker, or any Node host
 
 ---
 
-## 2. Create an Application Key
+## Use Cases
+### ✔ Store LFS Objects in Backblaze B2
+> Ideal for teams that want cheap, scalable storage without relying on GitHub/GitLab LFS quotas.
 
-1. Go to **App Keys**  
-2. Click **Add a New Application Key**  
-3. Choose:
-   - **Permissions:** Read/Write  
-   - **Bucket:** your new bucket  
-4. Save the following values:
+### ✔ Self‑hosted Git LFS endpoint
+> Use this as your own LFS backend for private repos, on‑prem Git servers, or custom workflows.
 
-You will need:
+### ✔ Stateless deployments
+> Perfect for platforms where persistent disks are expensive or unavailable (Render, Fly.io, Railway).
 
-- **KeyID** → `S3_ACCESS_KEY`  
-- **Application Key** → `S3_SECRET_KEY`  
-- **Bucket Name** → `S3_BUCKET`  
-- **Region:** eg. `us-west-004`  
-- **Endpoint:** eg. `s3.us-west-004.backblazeb2.com`
+### ✔ Multi‑provider S3 compatibility
+> Although optimized for Backblaze B2, the signing logic can be adapted for other S3‑compatible providers.
 
 ---
 
-## 3. Deploy the Proxy on Render
+## Known Limitations
+> These are current limitations of the implementation:
 
-1. Create a new **Web Service**  
-2. Connect your GitHub repo  
-3. Use these settings:
+### ⚠ No protection against concurrent identical uploads
+> The service does not prevent two clients from uploading the same object simultaneously.
+> Because the proxy is stateless and does not lock or track uploads, duplicate objects may be created if two identical LFS objects are pushed at the same time.
 
-### **Build Command**
-```npm install```
+### ⚠ No cryptographic validation of uploaded files
+> The proxy **does not hash or verify file contents**. It only compares Git LFS metadata (size, OID string) and trusts the client‑provided values.
+> This means:
+> - Corrupted uploads are not detected
+> - Mismatched content vs. OID is not validated
+> - Malicious clients could upload incorrect data
 
-### **Start Command**
-```npm start```
+### ⚠ No deduplication logic
+> Because no database or object index exists, the service cannot detect whether an object already exists in the bucket unless the S3 provider returns a HEAD match. Backblaze offers a "Data Versioning" control which should be set to "Keep only latest", other providers may or may not have similar logic.
 
-### **Environment Variables**
-
-| Variable | Example | Description |
-|---------|---------|-------------|
-| `S3_ENDPOINT` | `s3.us-west-004.backblazeb2.com` | Backblaze S3 endpoint |
-| `S3_REGION` | `us-west-004` | Backblaze region |
-| `S3_BUCKET` | `my-lfs-bucket` | Your bucket name |
-| `S3_ACCESS_KEY` | `xxxx` | KeyID |
-| `S3_SECRET_KEY` | `xxxx` | Application Key |
-| `PUBLIC_BASE_URL` | `https://your-service.onrender.com` | Used for LFS verify endpoint |
-| `S3_USE_SSL` | `true` | Always true unless debugging |
-| `S3_FORCE_PATH_STYLE` | `false` | Must be **false** for Backblaze |
-
-Click **Deploy**.
+### ⚠ No rate‑limiting or abuse protection beyond what the host provides
+> (Unless you add it yourself.)
 
 ---
 
-## 4. Configure Your Git Repository
-
-Inside your project:
-```git lfs install```
-
-```git config -f .lfsconfig lfs.url "https://your-service.onrender.com/"```
-
-Test with:
-```git add <large-file>```
-
-```git commit -m "Test LFS"```
-
-```git push```
-
-You should see LFS uploading via your Render proxy.
+## Deployment
+The project includes detailed setup instructions for Backblaze B2 and Render, including required environment variables and `.lfsconfig` usage. You can find this in the wiki
 
 ---
 
-# 📦 Understanding the `.env` Files
-
-This project uses environment variables to configure:
-
-- Backblaze credentials  
-- Bucket name  
-- Region  
-- Endpoint  
-- Public URL for verify callbacks  
-
-### Why `.env` files matter
-
-Different hosts handle environment variables differently:
-
-| Platform | How env vars are stored |
-|----------|--------------------------|
-| **Render** | Dashboard → Environment tab |
-| **Fly.io** | `fly secrets set KEY=value` |
-| **Railway** | Project Variables UI |
-| **Docker** | `.env` file or `-e KEY=value` |
-| **Local dev** | `.env` + `dotenv` |
-
-### What you should *not* commit
-
-Never commit:
-```
-S3_ACCESS_KEY
-S3_SECRET_KEY
-```
-
-These belong **only** in your hosting provider’s environment settings.
-
-### What you *can* commit
-
-A template file:
-```.env.example```
-Containing:
-```
-S3_ENDPOINT=
-S3_REGION=
-S3_BUCKET=
-S3_ACCESS_KEY=
-S3_SECRET_KEY=
-PUBLIC_BASE_URL=
-```
-
-This helps contributors understand what variables they need.
+## Contributing
+Contributions are welcome, especially around documentation, error handling, signing logic, and support for additional storage providers. Contribution guidelines emphasize clarity, English‑language comments, and security considerations. Please read the [contributor agreement](CONTRIBUTING.md) before opening pull requests.
 
 ---
 
-# 🤝 Contributing
+## Licence
+This project is licensed under the Apache 2.0 License, which provides:
+- MIT‑style freedom
+- Explicit patent protection
+- Compatibility with commercial and open‑source use
 
-Pull requests are welcome — especially improvements to:
-
-- Documentation  
-- Error handling  
-- Signing logic  
-- Additional storage provider support  
-- Performance or clarity  
-
-### Contribution Requirements
-
-To maintain quality and readability:
-
-1. **All code must be clearly commented**  
-   - Comments must be in **English**  
-   - Grammar and spelling must be correct  
-   - Comments must explain *why*, not just *what*
-
-2. **Pull requests must include a detailed summary**  
-   - What changed  
-   - Why it changed  
-   - How it was tested  
-   - Any breaking changes  
-
-3. **No unreviewed dependencies**  
-   - New packages must be justified  
-   - Security implications must be considered  
-
-4. **Follow the existing code style**  
-   - Consistent formatting  
-   - Consistent naming  
-   - Consistent structure  
-
-High‑quality contributions are always appreciated.
-
----
-
-# 📄 Licence
-
-This project is licensed under the **Apache 2.0 Licence**, providing:
-
-- MIT‑style freedom  
-- Explicit patent protection  
-- Compatibility with commercial and open‑source use  
-
-See the `LICENSE` file for details.
+See the [LICENSE](https://github.com/Eclipse-Forge/GitLFS-S3/blob/master/LICENSE) file for full terms.
 
 ---
 
 # ❤️ Acknowledgements
-
 This project uses:
-
-- **Express** (MIT)  
-- **aws4** (MIT)  
-- **Backblaze S3‑Compatible API**  
-- **Git LFS Basic Transfer Protocol**  
+- **Express** (MIT)
+- **aws4** (MIT)
+- **@aws-sdk/client-s3** (ASL 2.0)
+- **p-limit** (MIT)
+- **Backblaze S3‑Compatible API**
+- **Git LFS Basic Transfer Protocol**
 
 All dependencies are permissively licensed.
